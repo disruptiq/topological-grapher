@@ -1,0 +1,10 @@
+{
+  "name": "ts-parser",
+  "version": "1.0.0",
+  "description": "A standalone parser for TypeScript/JavaScript codebases.",
+  "main": "index.js",
+  "type": "module",
+  "dependencies": {
+    "ts-morph": "^22.0.0"
+  }
+}
