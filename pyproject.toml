@@ -11,5 +11,8 @@ dependencies = [
     "pydot>=2.0.0",
 ]
 
+[project.scripts]
+dependency-mapper = "dependency_mapper.cli:main"
+
 [tool.setuptools.packages.find]
 where = ["src"]
