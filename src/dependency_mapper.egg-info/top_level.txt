@@ -1,2 +1,0 @@
-dependency_mapper
-ts_parser
