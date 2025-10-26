@@ -1,0 +1,4 @@
+pydantic>=2.0
+networkx>=3.0
+astroid>=3.0
+pydot>=2.0.0

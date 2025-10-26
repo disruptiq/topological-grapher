@@ -1,0 +1,15 @@
+[project]
+name = "dependency-mapper"
+version = "0.1.0"
+description = "A tool to generate a topological dependency graph from a codebase."
+readme = "README.md"
+requires-python = ">=3.8"
+dependencies = [
+    "pydantic>=2.0",
+    "networkx>=3.0",
+    "astroid>=3.0",
+    "pydot>=2.0.0",
+]
+
+[tool.setuptools.packages.find]
+where = ["src"]
