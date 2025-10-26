@@ -105,6 +105,17 @@ class AstroidVisitor:
         class_id = self._add_node(node, NodeType.CLASS, node.name)
         self._add_edge(self._scope_stack[-1], class_id, EdgeType.CONTAINS)
 
+        if node.decorators:
+            for decorator in node.decorators.nodes:
+                try:
+                    for inferred in decorator.infer():
+                        if self._is_internal_project_symbol(inferred):
+                            inferred_file = Path(inferred.root().file)
+                            target_id = _get_node_id(inferred, inferred_file, self.root_path)
+                            self._add_edge(class_id, target_id, EdgeType.DECORATES)
+                except astroid.InferenceError:
+                    continue
+
         for base in node.bases:
             try:
                 for inferred in base.infer():
@@ -146,6 +157,9 @@ class AstroidVisitor:
         self._scope_stack.append(func_id)
         self._default_visit(node)
         self._scope_stack.pop()
+
+    def _visit_asyncfunctiondef(self, node: nodes.AsyncFunctionDef):
+        self._visit_functiondef(node)
 
     def _visit_call(self, node: nodes.Call):
         caller_id = self._scope_stack[-1]
