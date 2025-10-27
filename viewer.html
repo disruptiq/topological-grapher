@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Code Dependency Graph</title>
+    <script type="text/javascript" src="https://unpkg.com/vis-network/standalone/umd/vis-network.min.js"></script>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            display: flex;
+            height: 100vh;
+            margin: 0;
+            overflow: hidden;
+            background-color: #0A0A0A; /* Deep dark background */
+            color: #EAEAEA;
+        }
+        #graph-container {
+            width: 75%;
+            height: 100%;
+            border-right: 1px solid #333;
+        }
+        #metadata-panel {
+            width: 25%;
+            height: 100%;
+            padding: 20px;
+            box-sizing: border-box;
+            overflow-y: auto;
+            background-color: #1A1A1A;
+        }
+        #metadata-panel h3 {
+            margin-top: 0;
+            color: #FFFFFF;
+        }
+        pre {
+            background-color: #2C2C2C;
+            border: 1px solid #444;
+            padding: 10px;
+            border-radius: 5px;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+        }
+    </style>
+</head>
+<body>
+    <div id="graph-container"></div>
+    <div id="metadata-panel">
+        <h3>Node Metadata</h3>
+        <p>Click on a node to see its details.</p>
+    </div>
+
+    <script type="text/javascript">
+        document.addEventListener('DOMContentLoaded', function() {
+            fetch('output/dependency_graph.json')
+                .then(response => response.json())
+                .then(graphData => {
+                    const container = document.getElementById('graph-container');
+                    const metadataPanel = document.getElementById('metadata-panel');
+
+                    // --- "DeepFence" Aesthetic Style Mapping ---
+                    const styleMap = {
+                        file:      { color: { border: '#3498DB', background: '#283747' }, shape: 'box', borderWidth: 2.5 },
+                        class:     { color: '#8E44AD', shape: 'diamond' },
+                        function:  { color: '#ECF0F1', shape: 'ellipse' },
+                        variable:  { color: '#3498DB', shape: 'dot' },
+                        interface: { color: '#C0392B', shape: 'triangle' },
+                        type:      { color: '#E74C3C', shape: 'triangleDown' },
+                        enum:      { color: '#16A085', shape: 'hexagon' },
+                        namespace: { color: { border: '#566573', background: '#283747' }, shape: 'database' },
+                        default:   { color: '#7F8C8D', shape: 'ellipse' }
+                    };
+
+                    // --- Data Transformation for Vis.js ---
+                    const nodes = new vis.DataSet(
+                        graphData.nodes.map(node => {
+                            const style = styleMap[node.type] || styleMap.default;
+                            return {
+                                id: node.id,
+                                label: node.name,
+                                color: style.color,
+                                shape: style.shape,
+                                font: { color: (node.type === 'function' ? '#2C3E50' : '#FFFFFF') },
+                                shadow: { enabled: true, color: 'rgba(0,0,0,0.5)', size: 10, x: 5, y: 5 },
+                                borderWidth: style.borderWidth || 1.5 // Apply specific border width or default
+                            };
+                        })
+                    );
+
+                    const edges = new vis.DataSet(
+                        graphData.links.map(edge => ({
+                            from: edge.source,
+                            to: edge.target,
+                            arrows: 'to',
+                            color: { color: '#444444', highlight: '#888888' },
+                            width: 0.5
+                        }))
+                    );
+
+                    const data = { nodes, edges };
+
+                    const options = {
+                        layout: {
+                            hierarchical: false,
+                            improvedLayout: false
+                        },
+                        physics: {
+                            solver: 'forceAtlas2Based',
+                            forceAtlas2Based: {
+                                gravitationalConstant: -150, // Increased repulsion
+                                centralGravity: 0.01,       // Increased pull to center
+                                springLength: 300,          // Increased ideal edge length
+                                springConstant: 0.08,       // Slightly weaker springs
+                                avoidOverlap: 0.8           // Stronger overlap avoidance
+                            }
+                        },
+                        nodes: {
+                            borderWidth: 1.5
+                        },
+                        edges: {
+                            smooth: {
+                                type: 'continuous'
+                            }
+                        }
+                    };
+
+                    // Initialize the Network
+                    const network = new vis.Network(container, data, options);
+
+                    // --- Click Event Handler ---
+                    network.on('click', function(params) {
+                        if (params.nodes.length > 0) {
+                            const nodeId = params.nodes[0];
+                            const nodeData = graphData.nodes.find(n => n.id === nodeId);
+                            
+                            if (nodeData) {
+                                let metadataHtml = `<h3>Node Metadata</h3>`;
+                                metadataHtml += `<pre>${JSON.stringify(nodeData, null, 2)}</pre>`;
+                                metadataPanel.innerHTML = metadataHtml;
+                            }
+                        }
+                    });
+                })
+                .catch(error => {
+                    console.error('Error loading or parsing graph.json:', error);
+                    document.getElementById('metadata-panel').innerHTML = `
+                        <h3>Error</h3>
+                        <p>Could not load graph.json. Please ensure the file exists and is in the same directory as this HTML file.</p>
+                        <pre>${error}</pre>
+                    `;
+                });
+        });
+    </script>
+</body>
+</html>

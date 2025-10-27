@@ -126,6 +126,42 @@ def main():
         except IOError as e:
             parser.error(f"Error writing DOT to output file '{dot_path}': {e}")
 
+        # Generate PNG image using matplotlib
+        try:
+            import matplotlib.pyplot as plt
+            import networkx as nx
+
+            png_path = Path("output/dependency_graph.png")
+            plt.figure(figsize=(20, 20), facecolor='black')
+            plt.gca().set_facecolor('black')
+
+            # Use circular layout for radial arrangement
+            pos = nx.circular_layout(graph)
+
+            nx.draw(
+                graph,
+                pos,
+                with_labels=True,
+                node_size=400,
+                font_size=8,
+                font_color='white',
+                font_weight='bold',
+                arrows=True,
+                arrowsize=15,
+                arrowstyle='->',
+                edge_color='cyan',
+                node_color='white',
+                edgecolors='cyan',
+                linewidths=1
+            )
+
+            plt.axis('off')  # Remove axes
+            plt.savefig(str(png_path), dpi=150, bbox_inches='tight', facecolor='black')
+            plt.close()
+            print(f"Successfully saved PNG graph to {png_path}")
+        except ImportError as e:
+            print(f"Warning: Could not generate PNG image: {e}")
+
         print("All outputs saved to 'output/' directory")
 
     duration = end_time - start_time
