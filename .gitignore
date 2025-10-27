@@ -3,3 +3,6 @@ __pycache__
 node_modules
 /src/dependency_mapper.egg-info
 /src/dependency_mapper.egg-info
+
+
+output*
