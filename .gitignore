@@ -1,4 +1,5 @@
 .aider*
 __pycache__
 node_modules
-output*
+/src/dependency_mapper.egg-info
+/src/dependency_mapper.egg-info

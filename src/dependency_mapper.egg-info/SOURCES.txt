@@ -1,3 +1,4 @@
+README.md
 pyproject.toml
 src/dependency_mapper/__init__.py
 src/dependency_mapper/api.py
@@ -11,10 +12,10 @@ src/dependency_mapper/walkers.py
 src/dependency_mapper.egg-info/PKG-INFO
 src/dependency_mapper.egg-info/SOURCES.txt
 src/dependency_mapper.egg-info/dependency_links.txt
+src/dependency_mapper.egg-info/entry_points.txt
 src/dependency_mapper.egg-info/requires.txt
 src/dependency_mapper.egg-info/top_level.txt
 src/dependency_mapper/parsers/__init__.py
 src/dependency_mapper/parsers/base.py
 src/dependency_mapper/parsers/python_parser.py
 src/dependency_mapper/parsers/typescript_parser.py
-tests/test_integration.py
