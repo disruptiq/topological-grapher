@@ -1,4 +1,5 @@
 import argparse
+import os
 import time
 from pathlib import Path
 
@@ -24,7 +25,7 @@ def main():
         dest="output_file",
         type=Path,
         default=None,
-        help="Path to save the output JSON file. If not provided, prints to standard output.",
+        help="Path to save the output file in the specified format. If not provided, saves both JSON and DOT formats to 'output/' directory.",
     )
     parser.add_argument(
         "--workers",
@@ -77,25 +78,50 @@ def main():
         
         return # Skip normal output
 
-    output_str = ""
-    if args.format == "json":
-        serializer = JsonSerializer()
-        output_str = serializer.serialize(graph)
-    elif args.format == "dot":
-        serializer = DotSerializer()
-        try:
-            output_str = serializer.serialize(graph)
-        except ImportError as e:
-            parser.error(f"Error: {e}")
-
     if args.output_file:
+        output_str = ""
+        if args.format == "json":
+            serializer = JsonSerializer()
+            output_str = serializer.serialize(graph)
+        elif args.format == "dot":
+            serializer = DotSerializer()
+            try:
+                output_str = serializer.serialize(graph)
+            except ImportError as e:
+                parser.error(f"Error: {e}")
+
         try:
             args.output_file.write_text(output_str, encoding="utf-8")
             print(f"Successfully saved graph to {args.output_file}")
         except IOError as e:
             parser.error(f"Error writing to output file '{args.output_file}': {e}")
     else:
-        print(output_str)
+        # Create output directory and save both formats
+        os.makedirs("output", exist_ok=True)
+
+        # Save JSON format
+        serializer = JsonSerializer()
+        output_str = serializer.serialize(graph)
+        json_path = Path("output/dependency_graph.json")
+        try:
+            json_path.write_text(output_str, encoding="utf-8")
+            print(f"Successfully saved JSON graph to {json_path}")
+        except IOError as e:
+            parser.error(f"Error writing JSON to output file '{json_path}': {e}")
+
+        # Save DOT format
+        try:
+            serializer = DotSerializer()
+            output_str = serializer.serialize(graph)
+            dot_path = Path("output/dependency_graph.dot")
+            dot_path.write_text(output_str, encoding="utf-8")
+            print(f"Successfully saved DOT graph to {dot_path}")
+        except ImportError as e:
+            print(f"Warning: Could not generate DOT format: {e}")
+        except IOError as e:
+            parser.error(f"Error writing DOT to output file '{dot_path}': {e}")
+
+        print("All outputs saved to 'output/' directory")
 
     duration = end_time - start_time
     print(f"Found {graph.number_of_nodes()} nodes and {graph.number_of_edges()} edges.")
