@@ -1,5 +1,6 @@
 import argparse
 import os
+import sys
 import time
 from pathlib import Path
 
@@ -63,8 +64,12 @@ def main():
     print(f"Analyzing codebase at: {root_path}")
 
     start_time = time.perf_counter()
-    # Pass the number of workers from the CLI to the API.
-    graph = generate_graph(root_path, num_workers=args.workers)
+    try:
+        # Pass the number of workers from the CLI to the API.
+        graph = generate_graph(root_path, num_workers=args.workers)
+    except KeyboardInterrupt:
+        print("\nInterrupted by user. Terminating...")
+        sys.exit(1)
     end_time = time.perf_counter()
 
     if args.show_layers:
